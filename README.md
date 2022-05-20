@@ -1,3 +1,3 @@
 # vba-storage
 
-Contains all of my VBA scripts
+Contains all of my loose VBA scripts
