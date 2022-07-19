@@ -1,0 +1,47 @@
+Sub englishHyperlinks()
+   
+    Dim previousHyperlink As Shape
+    Dim newHyperlink As Shape
+    Dim link As String
+    Dim fund As Range
+    Dim english As Worksheet
+    Dim englishLinks As Range
+    
+        Set english = Worksheets("EN")
+       
+        english.Activate
+       
+        'Delete any old hyperlinks (this loop will delete every shape excluding pictures and macro buttons)
+        For Each previousHyperlink In english.Shapes
+            If Not (previousHyperlink.Type = msoPicture Or previousHyperlink.Type = msoOLEControlObject Or previousHyperlink.Type = msoFormControl) Then previousHyperlink.Delete
+        Next previousHyperlink
+       
+        'Set range for hyperlink vlookup
+        Set englishLinks = Worksheets("EN to French VLOOKUP").[A2:C100]
+       
+        'Starting cell
+        Set fund = english.[C9]
+       
+        'For each fund
+        For i = 1 To 20
+            'Select the cell
+            fund.Select
+            'Make a new blank box
+            Set newHyperlink = english.Shapes.AddShape(msoShapeRectangle, Selection.Left, Selection.Top, 260, 19)
+            'Make the new box invisible
+            newHyperlink.Fill.Visible = msoFalse
+            newHyperlink.Line.Visible = msoFalse
+            'Perform vlookup for the correct hyperlink
+            link = Application.WorksheetFunction.VLookup(fund, englishLinks, 3, False)
+           
+            'If the vlookup returns a value that is not blank, add the link to the box
+            If link <> "" Then english.Hyperlinks.Add Anchor:=newHyperlink, Address:=link
+           
+            'Move to next fund/cell
+            Set fund = fund.Offset(1, 0)
+        Next i
+       
+        'Select cell H1 on english sheet
+        english.[H1].Select
+           
+End Sub
