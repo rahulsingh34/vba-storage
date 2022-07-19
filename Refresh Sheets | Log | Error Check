@@ -1,0 +1,87 @@
+Sub master_updatefiles()
+       
+    Dim fldr As FileDialog
+    Dim thefolder As String
+    Dim thefile As String
+    Dim Shell As Object
+    Dim logD As String
+    Dim txtpath As String
+    Dim fs As Object
+    Dim txtfile As Object
+    Dim Connection As Variant
+ 
+    'CREATE LOG TO DESKTOP & STORE IN VARIABLE
+    txtpath = Environ("USERPROFILE") & "\Desktop\Firm Profiles Log - " & Format(Now, "mm-dd-yyyy-HH-mm-ss") & ".txt "
+ 
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    Set txtfile = fs.createtextfile(txtpath)
+ 
+    txtfile.Close
+    Set tfile = Nothing
+   
+    'ADDITIONAL STEPS TO GET DESKTOP PATH
+    Set fldr = Application.FileDialog(msoFileDialogFolderPicker)
+    Set Shell = CreateObject("WScript.Shell")
+    Desktop = Shell.specialfolders("Desktop")
+    Set Shell = Nothing
+   
+    'FOLDER SELECTION
+    With fldr
+        .Title = "Select the Firm Profiles Folder"
+        .AllowMultiSelect = False
+        .InitialFileName = Application.DefaultFilePath
+        If .Show = -1 Then
+            thefolder = .SelectedItems(1) & "\"
+        End If
+    End With
+   
+    thefile = Dir(thefolder)
+   
+    Set fldr = Nothing
+   
+    'SPEED UP MACRO
+    Application.ScreenUpdating = False
+   
+    'ACTIONS IN FILE
+    Do While thefile <> ""
+         Workbooks.Open fileName:=thefolder & thefile
+         'REFRESH QUERIES
+         For Each Connection In ActiveWorkbook.Connections
+            Connection.OLEDBConnection.BackgroundQuery = False
+            Connection.refresh
+         Next Connection
+         'REFRESH MORNINGSTAR
+         Call Auto_open
+         'ENSURE EVERYTHING CALCULATES
+         Calculate
+         'SELECT ENGLISH SHEET
+         Worksheets("FINAL").Activate
+         'CHECK IF MORNINGSTAR UPDATED - IF DATE IS NOT THE SAME THEN
+         If WorksheetFunction.CountIf(Range("AC5:AE5"), (WorksheetFunction.Text(WorksheetFunction.EoMonth(Date, -1), "mmmm, yyyy"))) = 0 Then
+            'OPEN LOG AND WRITE DOWN FILE NAME WITH HYPERLINK ISSUE
+            Open txtpath For Append As #1
+            Write #1, "Morningstar Error, DATA IS NOT UPDATED - " & ActiveWorkbook.Name
+            Close #1
+         'IF DATA REFRESHED SUCESSFULLY, CHECK IF HYPERLINK CHECKER CELLS INDICATE AN ISSUE - IF THE CELLS ARE NOT BLANK THEN
+         ElseIf WorksheetFunction.CountIf(Range("L14:L27"), "CHECK HYPERLINK AND CHANGE") + WorksheetFunction.CountIf(Range("L14:L27"), "CHECK HYPERLINKS AND CHANGE") <> 0 Then
+            'OPEN LOG AND WRITE DOWN FILE NAME WITH HYPERLINK ISSUE
+            Open txtpath For Append As #1
+            Write #1, "Data is Updated but CHECK HYPERLINKS - " & ActiveWorkbook.Name
+            Close #1
+         Else
+         'SUCCESSFULL REFESH
+         Open txtpath For Append As #1
+            Write #1, "SUCCESSFUL REFRESH - " & ActiveWorkbook.Name
+            Close #1
+         End If
+         'SAVE AND CLOSE
+         Workbooks(thefile).Close SaveChanges:=True
+         'NEXT FILE
+         thefile = Dir
+    Loop
+   
+    Application.ScreenUpdating = True
+   
+    MsgBox ("Data in all files has been refreshed, please check log for manual updates")
+   
+End Sub
