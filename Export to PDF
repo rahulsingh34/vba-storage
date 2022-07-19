@@ -1,0 +1,67 @@
+Sub fprint()
+   
+    Dim wb          As Workbook
+    Dim wsc         As Worksheet
+    Dim fileName    As String
+    Dim filePath    As String
+    Dim desktopPath As String
+    Dim Shell As Object
+    Dim fldr As FileDialog
+    Dim allfiles As String
+    Dim selectedfolder As String
+    Dim fso As Object
+   
+    Set fldr = Application.FileDialog(msoFileDialogFolderPicker)
+    Set fso = CreateObject("Scripting.FileSystemObject")
+   
+    'CREATE AND SET DESTINATION FOLDER FOR PRINTED FILES
+    Set Shell = CreateObject("WScript.Shell")
+    Desktop = Shell.specialfolders("Desktop")
+    Set Shell = Nothing
+   
+    If fso.FolderExists(Desktop & "\English Firm Profiles") Then
+        MsgBox ("Folder exists already, please rename it.")
+        Exit Sub
+    Else
+        MkDir (Desktop & "\English Firm Profiles")
+    End If
+   
+    desktopPath = Desktop & "\English Firm Profiles"
+   
+    'FOLDER SELECTION
+    With fldr
+        .Title = "Select the Firm Profiles Folder"
+        .AllowMultiSelect = False
+        .InitialFileName = Application.DefaultFilePath
+        If .Show = -1 Then
+            selectedfolder = .SelectedItems(1) & "\"
+        End If
+    End With
+   
+    allfiles = Dir(selectedfolder)
+   
+    Set fldr = Nothing
+   
+    'SPEED UP MACRO
+    Application.ScreenUpdating = False
+   
+    'ACTIONS IN FILE
+    Do While allfiles <> ""
+        Workbooks.Open fileName:=selectedfolder & allfiles
+        'PRINT SETTINGS
+        Set wb = ThisWorkbook
+        Set wsc = Worksheets("FINAL")
+        fileName = Worksheets("FINAL").Range("n1").Value
+        filePath = desktopPath & "\" & fileName & ".pdf"
+        wsc.ExportAsFixedFormat Type:=xlTypePDF, fileName:=filePath, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=False
+        'SAVE AND CLOSE
+        Workbooks(allfiles).Close SaveChanges:=False
+        'NEXT FILE
+        allfiles = Dir
+    Loop
+            
+    Application.ScreenUpdating = True
+   
+    MsgBox ("Files printed, QA time!")
+ 
+End Sub
