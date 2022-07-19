@@ -1,1 +1,47 @@
-
+Sub byebyefrench()
+ 
+Dim fldr As FileDialog
+Dim thefolder As String
+Dim thefile As String
+Dim Shell As Object
+ 
+Set fldr = Application.FileDialog(msoFileDialogFolderPicker)
+Set Shell = CreateObject("WScript.Shell")
+Desktop = Shell.specialfolders("Desktop")
+Set Shell = Nothing
+ 
+With fldr
+    .Title = "Select the folder"
+    .AllowMultiSelect = False
+    .InitialFileName = Application.DefaultFilePath
+    If .Show = -1 Then
+        thefolder = .SelectedItems(1) & "\"
+    End If
+End With
+ 
+thefile = Dir(thefolder)
+ 
+Set fldr = Nothing
+ 
+Application.ScreenUpdating = False
+Application.DisplayAlerts = False
+ 
+Do While thefile <> ""
+    Workbooks.Open Filename:=thefolder & thefile
+    On Error Resume Next
+    Sheets("FINAL_A FR").Delete
+    On Error Resume Next
+    Sheets("FINAL_F FR").Delete
+    On Error Resume Next
+    Sheets("FINAL_A_FR").Delete
+    On Error Resume Next
+    Sheets("FINAL_F_FR").Delete
+    On Error Resume Next
+    Workbooks(thefile).Close SaveChanges:=True
+thefile = Dir
+Loop
+ 
+Application.DisplayAlerts = True
+Application.ScreenUpdating = True
+ 
+MsgBox ("Bye Bye French has completed")
