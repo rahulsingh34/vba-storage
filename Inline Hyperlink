@@ -1,0 +1,35 @@
+Sub firmRanking()
+ 
+    Dim english As Range
+    Dim EN As Worksheet
+    Dim highlights As Range
+    Dim lookup1 As String
+    Dim loopup2 As String
+    Dim here As Integer
+   
+    'Select sheet
+    Set EN = Worksheets("FINAL")
+    EN.Activate
+   
+    'Set whole sheet as range and lookup value as "Highlights"
+    Set english = EN.UsedRange
+    lookup1 = "Highlights"
+   
+    'Find cell containing "Highlights", move down 1 row, copy paste as values
+    Set highlights = english.Find(What:=lookup1, LookIn:=xlValues, LookAt:=xlPart, MatchCase:=False)
+    Set highlights = highlights.Offset(1, 0)
+    highlights.Select
+    highlights.Copy
+    highlights.PasteSpecial (xlPasteValues)
+   
+    'Set second lookup for "HERE"
+    lookup2 = "HERE"
+   
+    'Find position of "HERE" within cell
+    here = InStr(1, highlights.Value, lookup2)
+   
+    'Underline and highlight "HERE"
+    highlights.Characters(here, 4).Font.Underline = True
+    highlights.Characters(here, 4).Font.Color = RGB(0, 112, 192)
+   
+End Sub
