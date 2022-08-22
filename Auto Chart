@@ -1,0 +1,67 @@
+Sub Update()
+ 
+    Dim lastRow As Long
+    Dim main As Worksheet
+    Dim chart As Object
+    Dim dates As Range
+    Dim i As Integer
+   
+    'Hyperspeed
+    Application.ScreenUpdating = False
+   
+    'Find last row
+    Set main = ThisWorkbook.Sheets("Generator")
+    main.Activate
+    lastRow = main.Cells(ActiveSheet.Rows.Count, "K").End(xlUp).Row
+    
+    'Refresh Morningstar
+    Call RefreshAddin
+   
+    'Calculate workbook & sheet
+    Calculate
+    main.Calculate
+   
+    'Adjust chart ranges
+    main.ChartObjects("Chart 2").Activate
+    With ActiveChart
+        ActiveChart.FullSeriesCollection(1).IsFiltered = False
+        ActiveChart.FullSeriesCollection(2).IsFiltered = False
+        ActiveChart.FullSeriesCollection(3).IsFiltered = False
+        ActiveChart.FullSeriesCollection(4).IsFiltered = False
+        .SeriesCollection(1).XValues = main.Range("K5:K" & lastRow)
+        .SeriesCollection(2).XValues = main.Range("O5:O" & lastRow)
+        .SeriesCollection(3).XValues = main.Range("S5:S" & lastRow)
+        .SeriesCollection(4).XValues = main.Range("W5:W" & lastRow)
+        .SeriesCollection(1).Values = main.Range("N5:N" & lastRow)
+        .SeriesCollection(2).Values = main.Range("R5:R" & lastRow)
+        .SeriesCollection(3).Values = main.Range("V5:V" & lastRow)
+        .SeriesCollection(4).Values = main.Range("Z5:Z" & lastRow)
+    End With
+   
+    'Hide unused series
+    If (main.[C2] = "") Then
+        ActiveChart.FullSeriesCollection(1).IsFiltered = True
+    End If
+    If (main.[D2] = "") Then
+        ActiveChart.FullSeriesCollection(2).IsFiltered = True
+    End If
+    If (main.[E2] = "") Then
+        ActiveChart.FullSeriesCollection(3).IsFiltered = True
+    End If
+    If (main.[F2] = "") Then
+        ActiveChart.FullSeriesCollection(4).IsFiltered = True
+    End If
+ 
+    'Back to reality
+    Application.ScreenUpdating = True
+    main.[A1].Select
+    MsgBox ("Chart updated, click the Refresh button")
+   
+End Sub
+
+Sub RefreshAddin()
+   
+    Set cmd = Application.CommandBars("Cell").Controls("Refresh All")
+    cmd.Execute
+ 
+End Sub
