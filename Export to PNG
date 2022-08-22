@@ -1,0 +1,44 @@
+Sub SaveChart()
+    
+    Dim main As Worksheet
+    Dim chart As ChartObject
+    Dim chartIMG As chart
+    Dim filename As String
+    Dim filepath As String
+    Dim Shell As Object
+    Dim i As Integer
+   
+    i = 0
+   
+    'Hyperspeed
+    Application.ScreenUpdating = False
+   
+    'Get Desktop path
+    Set Shell = CreateObject("WScript.Shell")
+    Desktop = Shell.specialfolders("Desktop")
+    Set Shell = Nothing
+ 
+    'Set and activate sheet
+    Set main = ThisWorkbook.Sheets("Generator")
+    main.Activate
+ 
+    'Setup chart printing
+    Set chart = ActiveSheet.ChartObjects("Chart 2")
+    Set chartIMG = chart.chart
+    filename = main.[A6].Value & ".png"
+   
+    'Handle multiple prints
+    Do While Dir(Desktop & "/" & filename) <> ""
+        i = i + 1
+        filename = main.[A6].Value & " - (" & i & ")" & ".png"
+    Loop
+       
+    'Print chart as high quality PNG
+    With chartIMG
+        ActiveWindow.Zoom = 300
+        .Export filename:=Desktop & "\" & filename, Filtername:="PNG"
+        ActiveWindow.Zoom = 100
+    End With
+   
+    'Back to reality
+    Application.ScreenUpdating = True
