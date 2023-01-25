@@ -1,0 +1,46 @@
+Sub Generate_Email()
+
+Dim txtpath As String
+Dim txtfile As Object
+Dim fs As Object
+
+txtpath = Environ("USERPROFILE") & "\Desktop\Generated Emails\Generated Email - " & Format(Now, "mm-dd-yyyy-hh-mm-ss") & ".txt"
+
+Set fs = CreateObject("Scripting.FileSystemObject")
+Set txtfile = fs.createtextfile(txtpath)
+
+txtfile.Close
+
+Worksheets("Inputs").Activate
+
+If ActiveSheet.[G2] = 1 Then
+    Open txtpath For Append As #1
+    Print #1, ActiveSheet.[F3].Value
+    Print #1, ""
+    Close #1
+End If
+
+If ActiveSheet.[G5] = 1 Then
+    Open txtpath For Append As #1
+    Print #1, ActiveSheet.[F6].Value
+    Print #1, ""
+    Close #1
+End If
+
+If ActiveSheet.[G8] = 1 Then
+    Open txtpath For Append As #1
+    Print #1, ActiveSheet.[F9].Value
+    Print #1, ""
+    Close #1
+End If
+
+If ActiveSheet.[G11] = 1 Then
+    Open txtpath For Append As #1
+    Print #1, ActiveSheet.[F12].Value
+    Print #1, ActiveSheet.[F13].Value
+    Close #1
+End If
+
+MsgBox ("Email Generated, Check Folder")
+
+End Sub
